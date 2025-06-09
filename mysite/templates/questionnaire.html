@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Athlete Wellness Questionnaire</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+      background: #f5f7fa;
+    }
+
+    .question {
+      margin-bottom: 40px;
+    }
+
+    .question-text {
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+    }
+
+    .slider-container {
+      position: relative;
+      width: 100%;
+      padding-bottom: 30px; /* Space for the value display */
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 14px;
+      border-radius: 7px;
+      background: linear-gradient(to right, #e74c3c, #f1c40f, #2ecc71);
+      outline: none;
+      margin: 5px 0;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #333;
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 0 2px rgba(0,0,0,0.5);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #333;
+      cursor: pointer;
+      border: 2px solid white;
+    }
+
+    .slider-value {
+      position: absolute;
+      top: 25px;
+      transform: translateX(-50%);
+      font-weight: bold;
+      font-size: 1em;
+      background-color: #f0f0f0;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    input[type="radio"] {
+      transform: scale(1.5);
+      margin: 10px 0;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      min-height: 100px;
+      margin-top: 10px;
+    }
+
+    .submit-btn {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: block;
+      margin: 30px auto 0;
+      width: 200px;
+    }
+
+    .submit-btn:hover {
+      background-color: #2ecc71;
+    }
+
+    .file-info {
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+<div class="questionnaire-container">
+  <h2>Athlete Wellness Questionnaire</h2>
+  <div class="file-info">
+    Assessing file
+  </div>
+  <form method="POST" action="{{ url_for('questionnaire') }}">
+    <input type="hidden" name="filename" value="{{ filename }}">
+
+    <div class="question">
+      <div class="question-text">1. How would you rate the quality of your sleep last night?</div>
+      <div class="slider-container">
+        <input type="range" id="q1" name="q1" min="0" max="10" value="5" oninput="updateSliderValue(this, 'q1val')">
+        <span class="slider-value" id="q1val">5</span>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-text">2. How tired do you feel right now?</div>
+      <div class="slider-container">
+        <input type="range" id="q2" name="q2" min="0" max="10" value="5" oninput="updateSliderValue(this, 'q2val')">
+        <span class="slider-value" id="q2val">5</span>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-text">3. How much energy do you feel you have right now?</div>
+      <div class="slider-container">
+        <input type="range" id="q3" name="q3" min="0" max="10" value="5" oninput="updateSliderValue(this, 'q3val')">
+        <span class="slider-value" id="q3val">5</span>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-text">4. How stressed do you feel right now?</div>
+      <div class="slider-container">
+        <input type="range" id="q4" name="q4" min="0" max="10" value="5" oninput="updateSliderValue(this, 'q4val')">
+        <span class="slider-value" id="q4val">5</span>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-text">5. How calm do you feel right now?</div>
+      <div class="slider-container">
+        <input type="range" id="q5" name="q5" min="0" max="10" value="5" oninput="updateSliderValue(this, 'q5val')">
+        <span class="slider-value" id="q5val">5</span>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-text">6. How angry or irritable do you feel right now?</div>
+      <div class="slider-container">
+        <input type="range" id="q6" name="q6" min="0" max="10" value="5" oninput="updateSliderValue(this, 'q6val')">
+        <span class="slider-value" id="q6val">5</span>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-text">7. How sore do your muscles feel right now?</div>
+      <div class="slider-container">
+        <input type="range" id="q7" name="q7" min="0" max="10" value="5" oninput="updateSliderValue(this, 'q7val')">
+        <span class="slider-value" id="q7val">5</span>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-text">Additional comments:</div>
+      <textarea name="comments" placeholder="Enter any additional comments about the data..."></textarea>
+    </div>
+
+    <button type="submit" class="submit-btn">Submit Assessment</button>
+  </form>
+</div>
+
+<script>
+  // Initialize all sliders on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    const sliders = document.querySelectorAll('input[type="range"]');
+    sliders.forEach(slider => {
+      const valueId = slider.id + 'val';
+      updateSliderValue(slider, valueId);
+    });
+  });
+
+  function updateSliderValue(slider, valueId) {
+    const value = slider.value;
+    const valueDisplay = document.getElementById(valueId);
+
+    // Update the display text
+    valueDisplay.textContent = value;
+
+    // Calculate position based on slider value
+    const min = parseInt(slider.min);
+    const max = parseInt(slider.max);
+    const percentage = ((value - min) / (max - min)) * 100;
+
+    // Update the position based on the percentage
+    valueDisplay.style.left = `${percentage}%`;
+  }
+</script>
+</body>
+</html>

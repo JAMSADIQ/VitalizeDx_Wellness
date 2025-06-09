@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athletes Performance Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('redlogo.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -1;
+            filter: brightness(0.7);
+        }
+        .dashboard-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+        .performance-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,240,240,0.9) 100%);
+            border-radius: 30px;
+            padding: 50px;
+            width: 80%;
+            max-width: 1000px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            text-align: center;
+            border: 3px solid rgba(52, 152, 219, 0.5);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 40px;
+            font-size: 3.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(45deg, #3498db, #2c3e50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .dropdown-container {
+            margin-bottom: 40px;
+        }
+        select {
+            width: 100%;
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px solid #3498db;
+            font-size: 1.5rem;
+            color: #2c3e50;
+            background-color: rgba(255,255,255,0.9);
+            transition: all 0.3s ease;
+        }
+        select:focus {
+            outline: none;
+            border-color: #2980b9;
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
+        }
+        .submit-btn {
+            background: linear-gradient(45deg, #3498db, #2c3e50);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .submit-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        @media (max-width: 768px) {
+            .performance-card {
+                width: 95%;
+                padding: 30px;
+            }
+            h1 {
+                font-size: 2.5rem;
+            }
+            select, .submit-btn {
+                font-size: 1.2rem;
+            }
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .flash {
+            color: red;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ffeeee;
+            border-radius: 4px;
+        }
+        .upload-box {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .upload-btn {
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .upload-btn:hover {
+            background-color: #0b7dda;
+        }
+        .plot-container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .plot-section {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .logout-btn {
+            color: #f44336;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .logout-btn:hover {
+            text-decoration: underline;
+        }
+        h1 {
+            color: #333;
+            margin: 0;
+        }
+        .instructions {
+            background: #e7f3fe;
+            padding: 15px;
+            border-left: 6px solid #2196F3;
+            margin-bottom: 20px;
+        }
+        .existing-files {
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .file-selector {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .questionnaire-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .btn-questionnaire {
+            background-color: #e67e22;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+        .btn-questionnaire:hover {
+            background-color: #d35400;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Vitalize DX</h1>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <div class="background-container"></div>
+
+    <div class="dashboard-container">
+        <div class="performance-card">
+            <h1>Athletes Performance</h1>
+
+            <div class="dropdown-container">
+                 <form method="POST" action="{{ url_for('plot') }}">
+       <select name="existing_file" id="dateDropdown" class="file-selector">
+            <option value="">Select File</option>
+            {% for file in existing_files %}
+            <option value="{{ file }}">{{ file }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="submit-btn">Selected File</button>
+
+    </form>
+            </div>
+
+        {% if selected_file and available_dates %}
+    <!-- Step 2: Select Date -->
+    <div class="dropdown-container">
+        <form method="POST">
+            <input type="hidden" name="existing_file" value="{{ selected_file }}">
+            <select name="selected_date" class="file-selector">
+                <option value="">Select Performance Date</option>
+                {% for date in available_dates %}
+                    <option value="{{ date }}" {% if selected_date and selected_date.strftime('%d/%m/%Y') == date %}selected{% endif %}>{{ date }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="submit-btn">Plot Data</button>
+        </form>
+    </div>
+    {% endif %}
+
+        </div>
+    </div>
+
+    {% if plot_html or plot_html2 or plot_html3 %}
+    <div class="plot-container">
+        <h2>Data Visualization</h2>
+
+        <!-- {{ plot_html|safe }}  -->
+
+        {% if plot_html %}
+    <div class="plot-section">
+        {{ plot_html|safe }}
+    </div>
+    {% endif %}
+
+    <!-- SHAP Analysis Plot -->
+    {% if plot_html2 %}
+    <div class="plot-section">
+        <h3>SHAP Analysis</h3>
+        {{ plot_html2|safe }}
+    </div>
+    {% endif %}
+
+    <!-- PCA Analysis Plot -->
+    {% if plot_html3 %}
+    <div class="plot-section">
+        <h3>PCA Analysis</h3>
+        {{ plot_html3|safe }}
+    </div>
+    {% endif %}
+
+        <div class="questionnaire-link">
+            <a href="{{ url_for('questionnaire', filename=current_filename) }}" class="btn-questionnaire">
+               Assess Data Quality
+               <!-- Athlete Wellness Questionnaire -->
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>

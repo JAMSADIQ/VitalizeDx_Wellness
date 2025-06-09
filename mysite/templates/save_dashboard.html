@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Plotter Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .flash {
+            color: red;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ffeeee;
+            border-radius: 4px;
+        }
+        .upload-box {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .upload-btn {
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .upload-btn:hover {
+            background-color: #0b7dda;
+        }
+        .plot-container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .logout-btn {
+            color: #f44336;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .logout-btn:hover {
+            text-decoration: underline;
+        }
+        h1 {
+            color: #333;
+            margin: 0;
+        }
+        .instructions {
+            background: #e7f3fe;
+            padding: 15px;
+            border-left: 6px solid #2196F3;
+            margin-bottom: 20px;
+        }
+        .existing-files {
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .file-selector {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .questionnaire-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .btn-questionnaire {
+            background-color: #e67e22;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+        .btn-questionnaire:hover {
+            background-color: #d35400;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Data Visualization Dashboard</h1>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="instructions">
+        <h3>How to use:</h3>
+        <ol>
+            <li>Upload an Excel file with at least 2 columns</li>
+            <li>The first column will be used for X-axis</li>
+            <li>The second column will be used for Y-axis</li>
+        </ol>
+    </div>
+
+    <div class="upload-box">
+        <h2>Upload Excel File</h2>
+        <form method="POST" action="{{ url_for('plot') }}" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".xlsx,.xls" required>
+            <button type="submit" class="upload-btn">Generate Plot</button>
+        </form>
+    </div>
+
+    <div class="existing-files">
+        <h2>Or select from existing files:</h2>
+        <form method="POST" action="{{ url_for('plot') }}">
+            <select name="existing_file" class="file-selector">
+                <option value="">-- Select a file --</option>
+                {% for file in existing_files %}
+                <option value="{{ file }}">{{ file }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="upload-btn">Plot Selected File</button>
+        </form>
+    </div>
+
+    {% if plot_html %}
+    <div class="plot-container">
+        <h2>Data Visualization</h2>
+        {{ plot_html|safe }}
+
+        <div class="questionnaire-link">
+            <a href="{{ url_for('questionnaire', filename=current_filename) }}" class="btn-questionnaire">
+               Assess Data Quality
+               <!-- Athlete Wellness Questionnaire -->
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>

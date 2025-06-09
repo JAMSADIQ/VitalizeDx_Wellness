@@ -1,0 +1,1740 @@
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Basketball Player Dashboard</title>
+            <style>
+                @page {
+                    size: A4;
+                    margin: 0;
+                }
+                body {
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    background-color: #f5f7fa;
+                    margin: 0;
+                    padding: 0;
+                    color: #333;
+                }
+                /* Print styling */
+                @media print {
+                    body {
+                        background-color: white;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .page {
+                        margin: 0;
+                        box-shadow: none;
+                        page-break-after: always;
+                        page-break-inside: avoid;
+                    }
+                    .page:last-child {
+                        page-break-after: auto;
+                    }
+                    img {
+                        max-width: 100%;
+                        height: auto;
+                    }
+                }
+                .page {
+                    width: 210mm;
+                    height: 297mm;
+                    margin: 0 auto;
+                    background: white;
+                    box-sizing: border-box;
+                    position: relative;
+                    overflow: hidden;
+                    padding: 22mm 20mm 18mm 20mm; /* Increased top padding, reduced bottom padding */
+                    margin-bottom: 10mm;
+                }
+                /* Beveled edges */
+                .page-border {
+                    position: absolute;
+                    top: 5px;
+                    left: 5px;
+                    right: 5px;
+                    bottom: 5px;
+                    border-radius: 10px;
+                    border: 2px solid transparent;
+                    background-image: linear-gradient(white, white),
+                                    linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+                    background-origin: border-box;
+                    background-clip: content-box, border-box;
+                    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+                    z-index: 1;
+                    pointer-events: none;
+                }
+                .page-content {
+                    position: relative;
+                    z-index: 2;
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    margin-top: -5mm; /* Shift content up a bit */
+                }
+                .header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 15px; /* Reduced from 20px */
+                }
+                .header img.vit-logo {
+                    height: 50px;
+                    object-fit: contain;
+                }
+                .header img.trieste-logo {
+                    height: 70px;
+                    object-fit: contain;
+                }
+                .player-name {
+                    text-align: center;
+                    font-size: 28px;
+                    font-weight: bold;
+                    margin: 10px 0; /* Reduced from 15px */
+                    background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+                    color: white;
+                    padding: 10px;
+                    border-radius: 8px;
+                    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+                }
+                .plots {
+                    display: flex;
+                    justify-content: space-between;
+                    margin: 15px 0 10px 0; /* Reduced margins */
+                    gap: 20px;
+                }
+                .radar-plot {
+                    width: 38%;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+                }
+                .score-trend {
+                    width: 58%;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+                }
+                .scores-section {
+                    margin: 15px 0 10px 0; /* Reduced margins */
+                }
+                .score {
+                    text-align: center;
+                    font-size: 18px;
+                    font-weight: bold;
+                    margin-bottom: 10px;
+                }
+                .change {
+                    font-size: 10px;
+                    margin-left: 5px;
+                }
+                .change.up {
+                    color: #4caf50;
+                }
+                .change.down {
+                    color: #f44336;
+                }
+                .metrics {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 15px;
+                    margin: 15px 0 10px 0; /* Reduced bottom margin */
+                }
+                .metrics-left {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                .metrics-right {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    position: relative;
+                }
+                .metric {
+                    background-color: #f8f9fa;
+                    padding: 10px;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                }
+                .metric-bar {
+                    height: 10px;
+                    background: linear-gradient(to right, red 10%, yellow 20%, green 80%, yellow 90%, red 100%);
+                    border-radius: 5px;
+                    position: relative;
+                    margin: 5px 0;
+                }
+                .metric-bar.nitrate {
+                    background: linear-gradient(to right, red 33%, yellow 66%, green 100%);
+                }
+                .metric-line {
+                    height: 100%;
+                    width: 5px;
+                    background-color: white;
+                    border: 1px solid black;
+                    position: absolute;
+                    top: 0;
+                    z-index: 2;
+                }
+                .metric-change {
+                    font-size: 10px;
+                }
+                .metric-change.up {
+                    color: #4caf50;
+                }
+                .metric-change.down {
+                    color: #f44336;
+                }
+                .metric-note {
+                    font-size: 12px;
+                    font-style: italic;
+                    color: #777;
+                    margin-top: 3px;
+                }
+                .footer {
+                    text-align: center;
+                    margin-top: 15px;
+                    font-size: 12px;
+                    color: #666;
+                }
+                .footer-actions {
+                    font-size: 10px; /* Starting font size, will be dynamically adjusted if needed */
+                    color: white;
+                    padding: 8px 15px;
+                    border-radius: 8px;
+                    display: inline-block;
+                    position: relative;
+                    background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+                    width: 100%;
+                    box-sizing: border-box;
+                    max-height: 150px;
+                    overflow-y: auto;
+                    text-align: justify;
+                }
+                .footer-actions-content {
+                    width: 100%;
+                }
+                .footer-actions ul {
+                    display: table;
+                    margin: 0 auto;
+                    padding: 0;
+                    text-align: center;
+                    list-style-position: inside;
+                }
+                .footer-actions li {
+                    display: block;
+                    text-align: center;
+                    margin-bottom: 5px;
+                }
+                .actions-title {
+                    font-weight: bold;
+                    margin-bottom: 5px;
+                }
+                    .next-button-container {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 30px;
+        margin-bottom: 20px;
+    }
+
+    .next-button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 12px 40px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+
+    .next-button:hover {
+        background-color: #2980b9;
+    }
+
+    .end-message {
+        text-align: center;
+        margin: 30px 0;
+    }
+
+    .return-button {
+        display: inline-block;
+        background-color: #27ae60;
+        color: white;
+        text-decoration: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: bold;
+        margin-top: 10px;
+        transition: background-color 0.3s ease;
+    }
+
+    .return-button:hover {
+        background-color: #2ecc71;
+    }
+            </style>
+            <script>
+                // Function to check and adjust font size if content overflows
+                function adjustActionsFontSize() { return; /* Disabled dynamic font sizing */
+                    // Process all action containers
+                    document.querySelectorAll('.footer-actions').forEach(container => {
+                        const content = container.querySelector('.footer-actions-content');
+                        if (!content) return;
+
+                        // Get the maximum height
+                        const maxHeight = 150; // From CSS max-height
+
+                        // Reset font size to measure initial overflow
+                        content.style.fontSize = '14px';
+
+                        // Check if content overflows container
+                        if (content.scrollHeight > maxHeight) {
+                            // Start reducing font size until content fits
+                            let fontSize = 14;
+                            while (content.scrollHeight > maxHeight && fontSize > 8) {
+                                fontSize -= 1;
+                                content.style.fontSize = fontSize + 'px';
+                            }
+
+                            // If still overflowing at minimum size (8px), set to 8px
+                            if (content.scrollHeight > maxHeight) {
+                                content.style.fontSize = '8px';
+                            }
+                        }
+                    });
+                }
+
+                // Run after page load
+                window.addEventListener('load', adjustActionsFontSize);
+
+                // Also run after any window resize
+                window.addEventListener('resize', adjustActionsFontSize);
+            </script>
+        </head>
+        <body>
+
+        <div class="page">
+            <div class="page-border"></div>
+            <div class="page-content">
+                <!-- Header Section with VIT and Trieste Images -->
+                <div class="header">
+                    <img src="{{ url_for('static', filename='VitBWlogo.png') }}" alt="VITALIZE DX" class="vit-logo">
+                    <img src="{{ url_for('static', filename='redlogo.png') }}" alt="Trieste" class="trieste-logo">
+                </div>
+
+                <!-- Player Section -->
+                <div class="player-name">Player 1</div>
+
+                <!-- Radar and Score Trends Charts -->
+                <div class="plots">
+                    <img src="{{ url_for('static', filename='Player_1.png') }}" alt="Player Radar Plot" class="radar-plot">
+                    <img src="{{ url_for('static', filename='player_1_score_trends.png') }}" alt="Player Scores Timeline" class="score-trend">
+                </div>
+
+                <!-- Scores -->
+                <div class="scores-section">
+                    <div class="score" style="color: #4caf50;">Total Score: 72.0% <span class="change up">🔼 33.62%</span></div>
+                    <div class="score" style="color: #4caf50;">Biomarker Score: 80.0% <span class="change up">🔼 9.67%</span></div>
+                    <div class="score" style="color: #4caf50;">Self-Reported Score: 75.0% <span class="change up">🔼 19.26%</span></div>
+                </div>
+
+                <!-- Metrics in two organized columns -->
+                <div class="metrics">
+                    <div class="metrics-left">
+
+            <div class="metric">
+                <div>⚖️ Salivary pH: 7.5</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 75.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +7.77%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>❤️ Salivary Nitrates: 1.0</div>
+                <div class="metric-bar nitrate">
+                    <div class="metric-line" style="left: 0.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -7.51%</div>
+                <div class="metric-note">Low nitrate levels impact cardiovascular tone</div>
+            </div>
+
+            <div class="metric">
+                <div>🔄 Salivary Uric Acid mg/dl: 1.96</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 0.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +218.73%</div>
+                <div class="metric-note">Low uric acid indicates muscle soreness and reduced recovery</div>
+            </div>
+
+            <div class="metric">
+                <div>🧊 Ketones ng/ml: 0.2</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 6.666666666666667%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -78.31%</div>
+
+            </div>
+
+                    </div>
+                    <div class="metrics-right">
+
+            <div class="metric">
+                <div>⚡ Cortisol nmol/L: 10.43</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 0.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -6.23%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>💪 Testosterone nmol/L: 1.09</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 54.35408%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +14.11%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧠 TCR: 0.1</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 94.72586458093706%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +18.64%</div>
+
+            </div>
+            <div style="margin-top: 15px;">
+                <div class="footer-actions">
+                    <div class="footer-actions-content">
+                        <div class="actions-title" style="text-align: center;">ACTIONS:</div>
+                        <ul style='list-style-type: disc; margin: 0 auto; padding: 0; text-align: justify; list-style-position: inside;'><li style='display: block; margin-bottom: 5px; text-align: justify;'>Increase dietary nitrate intake (e.g., leafy greens, beets, pomegranade)</li><li style='display: block; margin-bottom: 5px; text-align: justify;'>Focus on muscular recovery strategies such as cold water immersions 5x1 min at 11*C, or 15 min at 15*C; practice muscle relaxation techniques via massage coupled with deep breathing 4-7-8; hydrate with carbohydrate electrolytes and\or use intake 6g\day of L-alanyl-L-glutamine; use compression garments; adopt a high protein diet (34%) and monitor lactate</li></ul>
+                    </div>
+                </div>
+            </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer with copyright info -->
+                <div class="footer">
+                    <p>VITALIZE DX Players' Performance Scorecards &copy; 2025</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page">
+            <div class="page-border"></div>
+            <div class="page-content">
+                <!-- Header Section with VIT and Trieste Images -->
+                    <div class="header">
+                     <img src="{{ url_for('static', filename='VitBWlogo.png') }}" alt="VITALIZE DX" class="vit-logo">
+                    <img src="{{ url_for('static', filename='redlogo.png') }}" alt="Trieste" class="trieste-logo">
+                </div>
+
+                <!-- Player Section -->
+                <div class="player-name">Player 2</div>
+
+                <!-- Radar and Score Trends Charts -->
+                <div class="plots">
+                     <img src="{{ url_for('static', filename='Player_2.png') }}" alt="Player Radar Plot" class="radar-plot">
+                    <img src="{{ url_for('static', filename='player_2_score_trends.png') }}" alt="Player Scores Timeline" class="score-trend">
+                </div>
+
+                <!-- Scores -->
+                <div class="scores-section">
+                    <div class="score" style="color: #4caf50;">Total Score: 72.0% <span class="change down">🔽 7.68%</span></div>
+                    <div class="score" style="color: #4caf50;">Biomarker Score: 75.0% <span class="change down">🔽 10.24%</span></div>
+                    <div class="score" style="color: #4caf50;">Self-Reported Score: 80.0% <span class="change up">🔼 1.51%</span></div>
+                </div>
+
+                <!-- Metrics in two organized columns -->
+                <div class="metrics">
+                    <div class="metrics-left">
+
+            <div class="metric">
+                <div>⚖️ Salivary pH: 7.0</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -1.56%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>❤️ Salivary Nitrates: 1.0</div>
+                <div class="metric-bar nitrate">
+                    <div class="metric-line" style="left: 0.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -49.44%</div>
+                <div class="metric-note">Low nitrate levels impact cardiovascular tone</div>
+            </div>
+
+            <div class="metric">
+                <div>🔄 Salivary Uric Acid mg/dl: 1.56</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 0.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -50.33%</div>
+                <div class="metric-note">Low uric acid indicates muscle soreness and reduced recovery</div>
+            </div>
+
+            <div class="metric">
+                <div>🧊 Ketones ng/ml: 1.5</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -40.66%</div>
+
+            </div>
+
+                    </div>
+                    <div class="metrics-right">
+
+            <div class="metric">
+                <div>⚡ Cortisol nmol/L: 20.59</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 41.185%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +2.04%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>💪 Testosterone nmol/L: 0.85</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 42.540465000000005%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -20.47%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧠 TCR: 0.04</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 37.56571278703813%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -28.54%</div>
+
+            </div>
+            <div style="margin-top: 15px;">
+                <div class="footer-actions">
+                    <div class="footer-actions-content">
+                        <div class="actions-title" style="text-align: center;">ACTIONS:</div>
+                        <ul style='list-style-type: disc; margin: 0 auto; padding: 0; text-align: justify; list-style-position: inside;'><li style='display: block; margin-bottom: 5px; text-align: justify;'>Increase dietary nitrate intake (e.g., leafy greens, beets, pomegranade)</li><li style='display: block; margin-bottom: 5px; text-align: justify;'>Focus on muscular recovery strategies such as cold water immersions 5x1 min at 11*C, or 15 min at 15*C; practice muscle relaxation techniques via massage coupled with deep breathing 4-7-8; hydrate with carbohydrate electrolytes and\or use intake 6g\day of L-alanyl-L-glutamine; use compression garments; adopt a high protein diet (34%) and monitor lactate</li></ul>
+                    </div>
+                </div>
+            </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer with copyright info -->
+                <div class="footer">
+                    <p>VITALIZE DX Players' Performance Scorecards &copy; 2025</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page">
+            <div class="page-border"></div>
+            <div class="page-content">
+                <!-- Header Section with VIT and Trieste Images -->
+                <div class="header">
+                     <img src="{{ url_for('static', filename='VitBWlogo.png') }}" alt="VITALIZE DX" class="vit-logo">
+                    <img src="{{ url_for('static', filename='redlogo.png') }}" alt="Trieste" class="trieste-logo">
+                </div>
+
+                <!-- Player Section -->
+                <div class="player-name">Player 3</div>
+
+                <!-- Radar and Score Trends Charts -->
+                <div class="plots">
+                     <img src="{{ url_for('static', filename='Player_3.png') }}" alt="Player Radar Plot" class="radar-plot">
+                    <img src="{{ url_for('static', filename='player_3_score_trends.png') }}" alt="Player Scores Timeline" class="score-trend">
+                </div>
+
+                <!-- Scores -->
+                <div class="scores-section">
+                    <div class="score" style="color: #4caf50;">Total Score: 58.5% <span class="change down">🔽 2.12%</span></div>
+                    <div class="score" style="color: #4caf50;">Biomarker Score: 75.0% <span class="change down">🔽 3.91%</span></div>
+                    <div class="score" style="color: #4caf50;">Self-Reported Score: 65.0% <span class="change up">🔼 0.88%</span></div>
+                </div>
+
+                <!-- Metrics in two organized columns -->
+                <div class="metrics">
+                    <div class="metrics-left">
+
+            <div class="metric">
+                <div>⚖️ Salivary pH: 7.0</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +1.71%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>❤️ Salivary Nitrates: 1.0</div>
+                <div class="metric-bar nitrate">
+                    <div class="metric-line" style="left: 0.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -48.48%</div>
+                <div class="metric-note">Low nitrate levels impact cardiovascular tone</div>
+            </div>
+
+            <div class="metric">
+                <div>🔄 Salivary Uric Acid mg/dl: 4.8</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 55.99999999999999%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -2.35%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧊 Ketones ng/ml: 0.2</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 6.666666666666667%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -91.85%</div>
+
+            </div>
+
+                    </div>
+                    <div class="metrics-right">
+
+            <div class="metric">
+                <div>⚡ Cortisol nmol/L: 25.36</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 71.0275%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -3.48%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>💪 Testosterone nmol/L: 0.54</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 26.960164999999996%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -51.26%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧠 TCR: 0.02</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 19.325701305050316%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -50.23%</div>
+                <div class="metric-note">Low TCR indicates poor anabolic balance</div>
+            </div>
+            <div style="margin-top: 15px;">
+                <div class="footer-actions">
+                    <div class="footer-actions-content">
+                        <div class="actions-title" style="text-align: center;">ACTIONS:</div>
+                        <ul style='list-style-type: disc; margin: 0 auto; padding: 0; text-align: justify; list-style-position: inside;'><li style='display: block; margin-bottom: 5px; text-align: justify;'>Increase dietary nitrate intake (e.g., leafy greens, beets, pomegranade)</li><li style='display: block; margin-bottom: 5px; text-align: justify;'>Focus on physical recovery via high-protein nutrition (34%); use supplementation with 0.17g\kg BCAA (2:1:1) and 0.04g\kg arginine, and reduce stress via as mindful meditation 10-20 min per day and\or deep breathing 4-7-8</li></ul>
+                    </div>
+                </div>
+            </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer with copyright info -->
+                <div class="footer">
+                    <p>VITALIZE DX Players' Performance Scorecards &copy; 2025</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page">
+            <div class="page-border"></div>
+            <div class="page-content">
+                <!-- Header Section with VIT and Trieste Images -->
+                <div class="header">
+                   <img src="{{ url_for('static', filename='VitBWlogo.png') }}" alt="VITALIZE DX" class="vit-logo">
+                    <img src="{{ url_for('static', filename='redlogo.png') }}" alt="Trieste" class="trieste-logo">
+                </div>
+
+                <!-- Player Section -->
+                <div class="player-name">Player 4</div>
+
+                <!-- Radar and Score Trends Charts -->
+              <div class="plots">
+                     <img src="{{ url_for('static', filename='Player_4.png') }}" alt="Player Radar Plot" class="radar-plot">
+                    <img src="{{ url_for('static', filename='player_4_score_trends.png') }}" alt="Player Scores Timeline" class="score-trend">
+                </div>
+
+                <!-- Scores -->
+                <div class="scores-section">
+                    <div class="score" style="color: #4caf50;">Total Score: 66.94% <span class="change up">🔼 21.95%</span></div>
+                    <div class="score" style="color: #4caf50;">Biomarker Score: 87.5% <span class="change up">🔼 7.8%</span></div>
+                    <div class="score" style="color: #4caf50;">Self-Reported Score: 63.75% <span class="change up">🔼 10.36%</span></div>
+                </div>
+
+                <!-- Metrics in two organized columns -->
+                <div class="metrics">
+                    <div class="metrics-left">
+
+            <div class="metric">
+                <div>⚖️ Salivary pH: 7.0</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -6.67%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>❤️ Salivary Nitrates: 3.0</div>
+                <div class="metric-bar nitrate">
+                    <div class="metric-line" style="left: 100.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +71.43%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🔄 Salivary Uric Acid mg/dl: 3.52</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 30.4%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +61.75%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧊 Ketones ng/ml: 1.5</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -31.82%</div>
+
+            </div>
+
+                    </div>
+                    <div class="metrics-right">
+
+            <div class="metric">
+                <div>⚡ Cortisol nmol/L: 23.05</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 56.537499999999994%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +31.78%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>💪 Testosterone nmol/L: 0.41</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 20.63262%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -60.36%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧠 TCR: 0.02</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 16.277815909682612%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -76.43%</div>
+                <div class="metric-note">Low TCR indicates poor anabolic balance</div>
+            </div>
+            <div style="margin-top: 15px;">
+                <div class="footer-actions">
+                    <div class="footer-actions-content">
+                        <div class="actions-title" style="text-align: center;">ACTIONS:</div>
+                        <ul style='list-style-type: disc; margin: 0 auto; padding: 0; text-align: justify; list-style-position: inside;'><li style='display: block; margin-bottom: 5px; text-align: justify;'>Focus on physical recovery via high-protein nutrition (34%); use supplementation with 0.17g\kg BCAA (2:1:1) and 0.04g\kg arginine, and reduce stress via as mindful meditation 10-20 min per day and\or deep breathing 4-7-8</li></ul>
+                    </div>
+                </div>
+            </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer with copyright info -->
+                <div class="footer">
+                    <p>VITALIZE DX Players' Performance Scorecards &copy; 2025</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page">
+            <div class="page-border"></div>
+            <div class="page-content">
+                <!-- Header Section with VIT and Trieste Images -->
+                <div class="header">
+                    <img src="{{ url_for('static', filename='VitBWlogo.png') }}" alt="VITALIZE DX" class="vit-logo">
+                    <img src="{{ url_for('static', filename='redlogo.png') }}" alt="Trieste" class="trieste-logo">
+                </div>
+
+                <!-- Player Section -->
+                <div class="player-name">Player 5</div>
+
+                <!-- Radar and Score Trends Charts -->
+               <div class="plots">
+                     <img src="{{ url_for('static', filename='Player_5.png') }}" alt="Player Radar Plot" class="radar-plot">
+                    <img src="{{ url_for('static', filename='player_5_score_trends.png') }}" alt="Player Scores Timeline" class="score-trend">
+                </div>
+
+                <!-- Scores -->
+                <div class="scores-section">
+                    <div class="score" style="color: #4caf50;">Total Score: 56.25% <span class="change up">🔼 0.61%</span></div>
+                    <div class="score" style="color: #4caf50;">Biomarker Score: 62.5% <span class="change down">🔽 16.59%</span></div>
+                    <div class="score" style="color: #4caf50;">Self-Reported Score: 75.0% <span class="change up">🔼 17.55%</span></div>
+                </div>
+
+                <!-- Metrics in two organized columns -->
+                <div class="metrics">
+                    <div class="metrics-left">
+
+            <div class="metric">
+                <div>⚖️ Salivary pH: 8.0</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 100.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +2.13%</div>
+                <div class="metric-note">Abnormal salivary pH</div>
+            </div>
+
+            <div class="metric">
+                <div>❤️ Salivary Nitrates: 3.0</div>
+                <div class="metric-bar nitrate">
+                    <div class="metric-line" style="left: 100.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +63.64%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🔄 Salivary Uric Acid mg/dl: 12.46</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 100.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +129.91%</div>
+                <div class="metric-note">High uric acid impacts sleep quality and cardiovascular health</div>
+            </div>
+
+            <div class="metric">
+                <div>🧊 Ketones ng/ml: 4.0</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 100.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +97.26%</div>
+
+            </div>
+
+                    </div>
+                    <div class="metrics-right">
+
+            <div class="metric">
+                <div>⚡ Cortisol nmol/L: 14.46</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 2.8900000000000037%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -2.08%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>💪 Testosterone nmol/L: 0.3</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 14.94529%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -56.18%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧠 TCR: 0.02</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 18.788897102455017%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -63.33%</div>
+                <div class="metric-note">Low TCR indicates poor anabolic balance</div>
+            </div>
+            <div style="margin-top: 15px;">
+                <div class="footer-actions">
+                    <div class="footer-actions-content">
+                        <div class="actions-title" style="text-align: center;">ACTIONS:</div>
+                        <ul style='list-style-type: disc; margin: 0 auto; padding: 0; text-align: justify; list-style-position: inside;'><li style='display: block; margin-bottom: 5px; text-align: justify;'>Ensure hydration with carbohydrate electrolytes</li><li style='display: block; margin-bottom: 5px; text-align: justify;'>Adopt a low-purine balanced diet and increase hydration with carbohydrate electrolytes</li><li style='display: block; margin-bottom: 5px; text-align: justify;'>Focus on physical recovery via high-protein nutrition (34%); use supplementation with 0.17g\kg BCAA (2:1:1) and 0.04g\kg arginine, and reduce stress via as mindful meditation 10-20 min per day and\or deep breathing 4-7-8</li></ul>
+                    </div>
+                </div>
+            </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer with copyright info -->
+                <div class="footer">
+                    <p>VITALIZE DX Players' Performance Scorecards &copy; 2025</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page">
+            <div class="page-border"></div>
+            <div class="page-content">
+                <!-- Header Section with VIT and Trieste Images -->
+                <div class="header">
+                    <img src="{{ url_for('static', filename='VitBWlogo.png') }}" alt="VITALIZE DX" class="vit-logo">
+                    <img src="{{ url_for('static', filename='redlogo.png') }}" alt="Trieste" class="trieste-logo">
+                </div>
+
+                <!-- Player Section -->
+                <div class="player-name">Player 6</div>
+
+                <!-- Radar and Score Trends Charts -->
+               <div class="plots">
+                     <img src="{{ url_for('static', filename='Player_6.png') }}" alt="Player Radar Plot" class="radar-plot">
+                    <img src="{{ url_for('static', filename='player_6_score_trends.png') }}" alt="Player Scores Timeline" class="score-trend">
+                </div>
+
+                <!-- Scores -->
+                <div class="scores-section">
+                    <div class="score" style="color: #4caf50;">Total Score: 69.75% <span class="change up">🔼 14.53%</span></div>
+                    <div class="score" style="color: #4caf50;">Biomarker Score: 75.0% <span class="change down">🔽 4.05%</span></div>
+                    <div class="score" style="color: #4caf50;">Self-Reported Score: 77.5% <span class="change up">🔼 15.64%</span></div>
+                </div>
+
+                <!-- Metrics in two organized columns -->
+                <div class="metrics">
+                    <div class="metrics-left">
+
+            <div class="metric">
+                <div>⚖️ Salivary pH: 7.0</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +1.82%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>❤️ Salivary Nitrates: 3.0</div>
+                <div class="metric-bar nitrate">
+                    <div class="metric-line" style="left: 100.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +54.84%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🔄 Salivary Uric Acid mg/dl: 8.85</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 100.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +61.79%</div>
+                <div class="metric-note">High uric acid impacts sleep quality and cardiovascular health</div>
+            </div>
+
+            <div class="metric">
+                <div>🧊 Ketones ng/ml: 0.2</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 6.666666666666667%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -92.59%</div>
+
+            </div>
+
+                    </div>
+                    <div class="metrics-right">
+
+            <div class="metric">
+                <div>⚡ Cortisol nmol/L: 13.28</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 0.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -28.81%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>💪 Testosterone nmol/L: 0.33</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 16.6907%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -39.19%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧠 TCR: 0.03</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 22.85902503293808%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -26.3%</div>
+                <div class="metric-note">Low TCR indicates poor anabolic balance</div>
+            </div>
+            <div style="margin-top: 15px;">
+                <div class="footer-actions">
+                    <div class="footer-actions-content">
+                        <div class="actions-title" style="text-align: center;">ACTIONS:</div>
+                        <ul style='list-style-type: disc; margin: 0 auto; padding: 0; text-align: justify; list-style-position: inside;'><li style='display: block; margin-bottom: 5px; text-align: justify;'>Adopt a low-purine balanced diet and increase hydration with carbohydrate electrolytes</li><li style='display: block; margin-bottom: 5px; text-align: justify;'>Focus on physical recovery via high-protein nutrition (34%); use supplementation with 0.17g\kg BCAA (2:1:1) and 0.04g\kg arginine, and reduce stress via as mindful meditation 10-20 min per day and\or deep breathing 4-7-8</li></ul>
+                    </div>
+                </div>
+            </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer with copyright info -->
+                <div class="footer">
+                    <p>VITALIZE DX Players' Performance Scorecards &copy; 2025</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page">
+            <div class="page-border"></div>
+            <div class="page-content">
+                <!-- Header Section with VIT and Trieste Images -->
+                <div class="header">
+                     <img src="{{ url_for('static', filename='VitBWlogo.png') }}" alt="VITALIZE DX" class="vit-logo">
+                    <img src="{{ url_for('static', filename='redlogo.png') }}" alt="Trieste" class="trieste-logo">
+                </div>
+
+                <!-- Player Section -->
+                <div class="player-name">Player 7</div>
+
+                <!-- Radar and Score Trends Charts -->
+             <div class="plots">
+                     <img src="{{ url_for('static', filename='Player_7.png') }}" alt="Player Radar Plot" class="radar-plot">
+                    <img src="{{ url_for('static', filename='player_7_score_trends.png') }}" alt="Player Scores Timeline" class="score-trend">
+                </div>
+
+                <!-- Scores -->
+                <div class="scores-section">
+                    <div class="score" style="color: #4caf50;">Total Score: 71.72% <span class="change up">🔼 12.9%</span></div>
+                    <div class="score" style="color: #4caf50;">Biomarker Score: 93.75% <span class="change up">🔼 14.15%</span></div>
+                    <div class="score" style="color: #4caf50;">Self-Reported Score: 63.75% <span class="change up">🔼 3.22%</span></div>
+                </div>
+
+                <!-- Metrics in two organized columns -->
+                <div class="metrics">
+                    <div class="metrics-left">
+
+            <div class="metric">
+                <div>⚖️ Salivary pH: 7.5</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 75.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +3.24%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>❤️ Salivary Nitrates: 2.0</div>
+                <div class="metric-bar nitrate">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +17.24%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🔄 Salivary Uric Acid mg/dl: 4.55</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 51.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +8.14%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧊 Ketones ng/ml: 0.5</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 16.666666666666664%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -75.71%</div>
+
+            </div>
+
+                    </div>
+                    <div class="metrics-right">
+
+            <div class="metric">
+                <div>⚡ Cortisol nmol/L: 5.52</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 0.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -58.57%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>💪 Testosterone nmol/L: 0.29</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 14.711064999999998%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -45.6%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧠 TCR: 0.05</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 48.45541831357048%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +6.16%</div>
+
+            </div>
+            <div style="margin-top: 15px;">
+                <div class="footer-actions">
+                    <div class="footer-actions-content">
+                        <div class="actions-title" style="text-align: center;">ACTIONS:</div>
+                        <div style='text-align: justify;'>No actions specified</div>
+                    </div>
+                </div>
+            </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer with copyright info -->
+                <div class="footer">
+                    <p>VITALIZE DX Players' Performance Scorecards &copy; 2025</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page">
+            <div class="page-border"></div>
+            <div class="page-content">
+                <!-- Header Section with VIT and Trieste Images -->
+                <div class="header">
+                    <img src="{{ url_for('static', filename='VitBWlogo.png') }}" alt="VITALIZE DX" class="vit-logo">
+                    <img src="{{ url_for('static', filename='redlogo.png') }}" alt="Trieste" class="trieste-logo">
+                </div>
+
+                <!-- Player Section -->
+                <div class="player-name">Player 8</div>
+
+                <!-- Radar and Score Trends Charts -->
+             <div class="plots">
+                     <img src="{{ url_for('static', filename='Player_8.png') }}" alt="Player Radar Plot" class="radar-plot">
+                    <img src="{{ url_for('static', filename='player_8_score_trends.png') }}" alt="Player Scores Timeline" class="score-trend">
+                </div>
+                <!-- Scores -->
+                <div class="scores-section">
+                    <div class="score" style="color: #4caf50;">Total Score: 58.2% <span class="change down">🔽 1.11%</span></div>
+                    <div class="score" style="color: #4caf50;">Biomarker Score: 80.0% <span class="change down">🔽 3.49%</span></div>
+                    <div class="score" style="color: #4caf50;">Self-Reported Score: 60.62% <span class="change down">🔽 0.68%</span></div>
+                </div>
+
+                <!-- Metrics in two organized columns -->
+                <div class="metrics">
+                    <div class="metrics-left">
+
+            <div class="metric">
+                <div>⚖️ Salivary pH: 7.5</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 75.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +5.63%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>❤️ Salivary Nitrates: 1.0</div>
+                <div class="metric-bar nitrate">
+                    <div class="metric-line" style="left: 0.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -34.78%</div>
+                <div class="metric-note">Low nitrate levels impact cardiovascular tone</div>
+            </div>
+
+            <div class="metric">
+                <div>🔄 Salivary Uric Acid mg/dl: 7.02</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 100.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +81.96%</div>
+                <div class="metric-note">High uric acid impacts sleep quality and cardiovascular health</div>
+            </div>
+
+            <div class="metric">
+                <div>🧊 Ketones ng/ml: 0.5</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 16.666666666666664%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -71.26%</div>
+
+            </div>
+
+                    </div>
+                    <div class="metrics-right">
+
+            <div class="metric">
+                <div>⚡ Cortisol nmol/L: 9.0</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 0.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -45.1%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>💪 Testosterone nmol/L: 0.93</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 46.680175%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +9.35%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧠 TCR: 0.1</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 94.32853811521458%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +82.66%</div>
+
+            </div>
+            <div style="margin-top: 15px;">
+                <div class="footer-actions">
+                    <div class="footer-actions-content">
+                        <div class="actions-title" style="text-align: center;">ACTIONS:</div>
+                        <ul style='list-style-type: disc; margin: 0 auto; padding: 0; text-align: justify; list-style-position: inside;'><li style='display: block; margin-bottom: 5px; text-align: justify;'>Increase dietary nitrate intake (e.g., leafy greens, beets, pomegranade)</li><li style='display: block; margin-bottom: 5px; text-align: justify;'>Adopt a low-purine balanced diet and increase hydration with carbohydrate electrolytes</li></ul>
+                    </div>
+                </div>
+            </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer with copyright info -->
+                <div class="footer">
+                    <p>VITALIZE DX Players' Performance Scorecards &copy; 2025</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page">
+            <div class="page-border"></div>
+            <div class="page-content">
+                <!-- Header Section with VIT and Trieste Images -->
+                <div class="header">
+                  <img src="{{ url_for('static', filename='VitBWlogo.png') }}" alt="VITALIZE DX" class="vit-logo">
+                    <img src="{{ url_for('static', filename='redlogo.png') }}" alt="Trieste" class="trieste-logo">
+                </div>
+
+                <!-- Player Section -->
+                <div class="player-name">Player 9</div>
+
+                <!-- Radar and Score Trends Charts -->
+               <div class="plots">
+                     <img src="{{ url_for('static', filename='Player_9.png') }}" alt="Player Radar Plot" class="radar-plot">
+                    <img src="{{ url_for('static', filename='player_9_score_trends.png') }}" alt="Player Scores Timeline" class="score-trend">
+                </div>
+
+                <!-- Scores -->
+                <div class="scores-section">
+                    <div class="score" style="color: #4caf50;">Total Score: 101.29% <span class="change up">🔼 33.68%</span></div>
+                    <div class="score" style="color: #4caf50;">Biomarker Score: 92.5% <span class="change up">🔼 12.57%</span></div>
+                    <div class="score" style="color: #4caf50;">Self-Reported Score: 91.25% <span class="change up">🔼 14.17%</span></div>
+                </div>
+
+                <!-- Metrics in two organized columns -->
+                <div class="metrics">
+                    <div class="metrics-left">
+
+            <div class="metric">
+                <div>⚖️ Salivary pH: 7.0</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -2.7%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>❤️ Salivary Nitrates: 3.0</div>
+                <div class="metric-bar nitrate">
+                    <div class="metric-line" style="left: 100.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +50.0%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🔄 Salivary Uric Acid mg/dl: 7.0</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 100.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +74.68%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧊 Ketones ng/ml: 1.5</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -45.89%</div>
+
+            </div>
+
+                    </div>
+                    <div class="metrics-right">
+
+            <div class="metric">
+                <div>⚡ Cortisol nmol/L: 5.85</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 0.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -65.45%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>💪 Testosterone nmol/L: 1.05</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 52.433434999999996%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +15.6%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧠 TCR: 0.18</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 100.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +168.74%</div>
+
+            </div>
+            <div style="margin-top: 15px;">
+                <div class="footer-actions">
+                    <div class="footer-actions-content">
+                        <div class="actions-title" style="text-align: center;">ACTIONS:</div>
+                        <div style='text-align: justify;'>No actions specified</div>
+                    </div>
+                </div>
+            </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer with copyright info -->
+                <div class="footer">
+                    <p>VITALIZE DX Players' Performance Scorecards &copy; 2025</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page">
+            <div class="page-border"></div>
+            <div class="page-content">
+                <!-- Header Section with VIT and Trieste Images -->
+                <div class="header">
+                   <img src="{{ url_for('static', filename='VitBWlogo.png') }}" alt="VITALIZE DX" class="vit-logo">
+                    <img src="{{ url_for('static', filename='redlogo.png') }}" alt="Trieste" class="trieste-logo">
+                </div>
+
+                <!-- Player Section -->
+                <div class="player-name">Player 10</div>
+
+                <!-- Radar and Score Trends Charts -->
+              <div class="plots">
+                     <img src="{{ url_for('static', filename='Player_10.png') }}" alt="Player Radar Plot" class="radar-plot">
+                    <img src="{{ url_for('static', filename='player_10_score_trends.png') }}" alt="Player Scores Timeline" class="score-trend">
+                </div>
+
+                <!-- Scores -->
+                <div class="scores-section">
+                    <div class="score" style="color: #4caf50;">Total Score: 76.5% <span class="change up">🔼 31.69%</span></div>
+                    <div class="score" style="color: #4caf50;">Biomarker Score: 100.0% <span class="change up">🔼 28.52%</span></div>
+                    <div class="score" style="color: #4caf50;">Self-Reported Score: 63.75% <span class="change down">🔽 1.8%</span></div>
+                </div>
+
+                <!-- Metrics in two organized columns -->
+                <div class="metrics">
+                    <div class="metrics-left">
+
+            <div class="metric">
+                <div>⚖️ Salivary pH: 7.0</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -0.44%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>❤️ Salivary Nitrates: 3.0</div>
+                <div class="metric-bar nitrate">
+                    <div class="metric-line" style="left: 100.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +65.52%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🔄 Salivary Uric Acid mg/dl: 3.47</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 29.400000000000006%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +104.95%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧊 Ketones ng/ml: 1.5</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -2.04%</div>
+
+            </div>
+
+                    </div>
+                    <div class="metrics-right">
+
+            <div class="metric">
+                <div>⚡ Cortisol nmol/L: 17.42</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 21.347499999999986%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -5.76%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>💪 Testosterone nmol/L: 0.78</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 38.770309999999995%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +14.68%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧠 TCR: 0.04</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 40.47605177385375%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -5.25%</div>
+
+            </div>
+            <div style="margin-top: 15px;">
+                <div class="footer-actions">
+                    <div class="footer-actions-content">
+                        <div class="actions-title" style="text-align: center;">ACTIONS:</div>
+                        <div style='text-align: justify;'>No actions specified</div>
+                    </div>
+                </div>
+            </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer with copyright info -->
+                <div class="footer">
+                    <p>VITALIZE DX Players' Performance Scorecards &copy; 2025</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page">
+            <div class="page-border"></div>
+            <div class="page-content">
+                <!-- Header Section with VIT and Trieste Images -->
+                <div class="header">
+                   <img src="{{ url_for('static', filename='VitBWlogo.png') }}" alt="VITALIZE DX" class="vit-logo">
+                    <img src="{{ url_for('static', filename='redlogo.png') }}" alt="Trieste" class="trieste-logo">
+                </div>
+
+                <!-- Player Section -->
+                <div class="player-name">Player 11</div>
+
+                <!-- Radar and Score Trends Charts -->
+                <div class="plots">
+                     <img src="{{ url_for('static', filename='Player_11.png') }}" alt="Player Radar Plot" class="radar-plot">
+                    <img src="{{ url_for('static', filename='player_11_score_trends.png') }}" alt="Player Scores Timeline" class="score-trend">
+                </div>
+
+                <!-- Scores -->
+                <div class="scores-section">
+                    <div class="score" style="color: #f44336;">Total Score: 0% <span class="change down">🔽 0%</span></div>
+                    <div class="score" style="color: #f44336;">Biomarker Score: 0% <span class="change down">🔽 0%</span></div>
+                    <div class="score" style="color: #4caf50;">Self-Reported Score: 52.5% <span class="change down">🔽 2.1%</span></div>
+                </div>
+
+                <!-- Metrics in two organized columns -->
+                <div class="metrics">
+                    <div class="metrics-left">
+
+                    </div>
+                    <div class="metrics-right">
+
+                    </div>
+                </div>
+
+                <!-- Footer with copyright info -->
+                <div class="footer">
+                    <p>VITALIZE DX Players' Performance Scorecards &copy; 2025</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page">
+            <div class="page-border"></div>
+            <div class="page-content">
+                <!-- Header Section with VIT and Trieste Images -->
+                <div class="header">
+                    <img src="{{ url_for('static', filename='VitBWlogo.png') }}" alt="VITALIZE DX" class="vit-logo">
+                    <img src="{{ url_for('static', filename='redlogo.png') }}" alt="Trieste" class="trieste-logo">
+                </div>
+
+                <!-- Player Section -->
+                <div class="player-name">Player 12</div>
+
+                <!-- Radar and Score Trends Charts -->
+                <div class="plots">
+                     <img src="{{ url_for('static', filename='Player_12.png') }}" alt="Player Radar Plot" class="radar-plot">
+                    <img src="{{ url_for('static', filename='player_12_score_trends.png') }}" alt="Player Scores Timeline" class="score-trend">
+                </div>
+
+                <!-- Scores -->
+                <div class="scores-section">
+                    <div class="score" style="color: #4caf50;">Total Score: 75.04% <span class="change up">🔼 6.5%</span></div>
+                    <div class="score" style="color: #4caf50;">Biomarker Score: 86.25% <span class="change up">🔼 6.85%</span></div>
+                    <div class="score" style="color: #4caf50;">Self-Reported Score: 72.5% <span class="change down">🔽 2.53%</span></div>
+                </div>
+
+                <!-- Metrics in two organized columns -->
+                <div class="metrics">
+                    <div class="metrics-left">
+
+            <div class="metric">
+                <div>⚖️ Salivary pH: 7.0</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -2.33%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>❤️ Salivary Nitrates: 2.0</div>
+                <div class="metric-bar nitrate">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +56.52%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🔄 Salivary Uric Acid mg/dl: 6.01</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 80.19999999999999%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +14.51%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧊 Ketones ng/ml: 4.0</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 100.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +225.79%</div>
+
+            </div>
+
+                    </div>
+                    <div class="metrics-right">
+
+            <div class="metric">
+                <div>⚡ Cortisol nmol/L: 8.61</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 0.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -62.28%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>💪 Testosterone nmol/L: 0.67</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 33.27556499999999%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -29.59%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧠 TCR: 0.08</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 70.25853222864093%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +65.44%</div>
+
+            </div>
+            <div style="margin-top: 15px;">
+                <div class="footer-actions">
+                    <div class="footer-actions-content">
+                        <div class="actions-title" style="text-align: center;">ACTIONS:</div>
+                        <div style='text-align: justify;'>No actions specified</div>
+                    </div>
+                </div>
+            </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer with copyright info -->
+                <div class="footer">
+                    <p>VITALIZE DX Players' Performance Scorecards &copy; 2025</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page">
+            <div class="page-border"></div>
+            <div class="page-content">
+                <!-- Header Section with VIT and Trieste Images -->
+                <div class="header">
+                  <img src="{{ url_for('static', filename='VitBWlogo.png') }}" alt="VITALIZE DX" class="vit-logo">
+                    <img src="{{ url_for('static', filename='redlogo.png') }}" alt="Trieste" class="trieste-logo">
+                </div>
+
+                <!-- Player Section -->
+                <div class="player-name">Player 13</div>
+
+                <!-- Radar and Score Trends Charts -->
+               <div class="plots">
+                     <img src="{{ url_for('static', filename='Player_13.png') }}" alt="Player Radar Plot" class="radar-plot">
+                    <img src="{{ url_for('static', filename='player_13_score_trends.png') }}" alt="Player Scores Timeline" class="score-trend">
+                </div>
+                <!-- Scores -->
+                <div class="scores-section">
+                    <div class="score" style="color: #4caf50;">Total Score: 71.16% <span class="change down">🔽 9.55%</span></div>
+                    <div class="score" style="color: #4caf50;">Biomarker Score: 68.75% <span class="change down">🔽 18.56%</span></div>
+                    <div class="score" style="color: #4caf50;">Self-Reported Score: 86.25% <span class="change up">🔼 14.68%</span></div>
+                </div>
+
+                <!-- Metrics in two organized columns -->
+                <div class="metrics">
+                    <div class="metrics-left">
+
+            <div class="metric">
+                <div>⚖️ Salivary pH: 6.0</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 0.0%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -14.29%</div>
+                <div class="metric-note">Abnormal salivary pH</div>
+            </div>
+
+            <div class="metric">
+                <div>❤️ Salivary Nitrates: 2.0</div>
+                <div class="metric-bar nitrate">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +17.19%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🔄 Salivary Uric Acid mg/dl: 7.69</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 100.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +69.85%</div>
+                <div class="metric-note">High uric acid impacts sleep quality and cardiovascular health</div>
+            </div>
+
+            <div class="metric">
+                <div>🧊 Ketones ng/ml: 1.5</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 50.0%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +30.34%</div>
+
+            </div>
+
+                    </div>
+                    <div class="metrics-right">
+
+            <div class="metric">
+                <div>⚡ Cortisol nmol/L: 18.63</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 28.937499999999993%;"></div>
+                </div>
+                <div class="metric-change down">🔽 -4.86%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>💪 Testosterone nmol/L: 0.97</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 48.314544999999995%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +10.73%</div>
+
+            </div>
+
+            <div class="metric">
+                <div>🧠 TCR: 0.05</div>
+                <div class="metric-bar">
+                    <div class="metric-line" style="left: 47.15224222905384%;"></div>
+                </div>
+                <div class="metric-change up">🔼 +8.25%</div>
+
+            </div>
+            <div style="margin-top: 15px;">
+                <div class="footer-actions">
+                    <div class="footer-actions-content">
+                        <div class="actions-title" style="text-align: center;">ACTIONS:</div>
+                        <ul style='list-style-type: disc; margin: 0 auto; padding: 0; text-align: justify; list-style-position: inside;'><li style='display: block; margin-bottom: 5px; text-align: justify;'>Ensure hydration with carbohydrate electrolytes and improve oral hygiene</li><li style='display: block; margin-bottom: 5px; text-align: justify;'>Adopt a low-purine balanced diet and increase hydration with carbohydrate electrolytes</li></ul>
+                    </div>
+                </div>
+            </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer with copyright info -->
+                <div class="footer">
+                    <p>VITALIZE DX Players' Performance Scorecards &copy; 2025</p>
+                </div>
+            </div>
+        </div>
+      {% if next_index is not none %}
+    <div class="next-button-container">
+        <form action="{{ url_for('show_sequence', page_index=next_index) }}" method="get">
+            <button type="submit" class="next-button">Next</button>
+        </form>
+    </div>
+{% else %}
+    <div class="end-message">
+        <p>You have reached the end of the pages.</p>
+        <a href="{{ url_for('dashboard') }}" class="return-button">Return to Dashboard</a>
+    </div>
+{% endif %}
+        </body>
+        </html>

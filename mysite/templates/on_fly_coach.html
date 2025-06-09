@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Performance Analysis Dashboard</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            const formattedDate = now.toISOString().replace('T', ' ').substring(0, 19);
+            document.getElementById('generatedDate').textContent = 'Generated on ' + formattedDate;
+        });
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 210mm;
+            height: 297mm;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        /* Print styling */
+        @media print {
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+            }
+            .dashboard-container {
+                margin: 0;
+                box-shadow: none;
+                page-break-after: always;
+                page-break-inside: avoid;
+            }
+            .dashboard-container:last-child {
+                page-break-after: auto;
+            }
+            img {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+        .dashboard-container {
+            width: 210mm;
+            height: 297mm;
+            margin: 0 auto;
+            background: white;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            padding: 20mm;
+        }
+        /* Beveled edges */
+        .dashboard-border {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-image: linear-gradient(white, white),
+                              linear-gradient(135deg, #1a2a6c, #b21f1f, #1e988a);
+            background-origin: border-box;
+            background-clip: content-box, border-box;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            pointer-events: none;
+        }
+        .dashboard-content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .header-logos {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .header-logos img.vit-logo {
+            height: 50px;
+            object-fit: contain;
+        }
+        .header-logos img.trieste-logo {
+            height: 70px;
+            object-fit: contain;
+        }
+        .header-title {
+            text-align: center;
+            flex: 1;
+        }
+        .header-title h1 {
+            font-size: 20pt;
+            margin: 0;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1e988a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+        .header-title p {
+            font-size: 8pt;
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+        .main-content {
+            display: flex;
+            flex-grow: 1;
+            margin-top: 10px;
+        }
+        .left-column {
+            flex: 65%;
+            padding-right: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        .right-column {
+            flex: 35%;
+            padding-left: 15px;
+            border-left: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+        }
+        .section {
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .section-header {
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1e988a);
+            color: white;
+            font-size: 12pt;
+            font-weight: bold;
+        }
+        .section-content {
+            padding: 15px;
+            overflow-y: auto;
+        }
+        .chart-section-content {
+            padding: 10px;
+            overflow-y: auto;
+            height: auto;
+        }
+        .image-container {
+            text-align: center;
+            padding: 10px;
+        }
+        .image-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .footer {
+            text-align: center;
+            margin-top: auto;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 8pt;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-border"></div>
+        <div class="dashboard-content">
+            <div class="header">
+                <div class="header-logos">
+                    <img src="{{ url_for('static', filename='VitBWlogo.png') }}" alt="VITALIZE DX" class="vit-logo">
+                    <div class="header-title">
+                        <h1>Precision Performance Report</h1>
+                        <p id="generatedDate"></p>
+
+                    </div>
+                    <img src="{{ url_for('static', filename='redlogo.png') }}" alt="Trieste" class="trieste-logo">
+                </div>
+            </div>
+
+            <div class="main-content" style="display: flex; align-items: stretch; height: calc(100% - 130px);">
+                <div class="left-column" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div class="section" style="flex: 1; margin-bottom: 15px;">
+                        <div class="section-header">Aggregate Performance Timeline</div>
+                        <div class="chart-section-content">
+                            <div class="image-container">
+				    <img src="{{ url_for('static', filename='plots/plotaggregate.png') }}" alt="firstplot" class="first-plot">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section" style="flex: 1; margin-bottom: 15px;">
+                        <div class="section-header">Player Classification</div>
+                        <div class="chart-section-content">
+                            <div class="image-container">
+				   <img src="{{ url_for('static', filename='plots/plotPC.png') }}" alt="firstplot" class="first-plot">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section" style="flex: 1; margin-bottom: 0;">
+                        <div class="section-header">Feature Importance (SHAP Analysis)</div>
+                        <div class="chart-section-content">
+                            <div class="image-container">
+				    <img src="{{ url_for('static', filename='plots/plotSHAP.png') }}" alt="firstplot" class="first-plot">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-column" style="display: flex; flex-direction: column;">
+                    <div class="section" style="flex-grow: 1; display: flex; flex-direction: column;">
+                        <div class="section-header" style="text-align: center;">Player Classification Summary</div>
+                        <div class="section-content" style="flex-grow: 1; overflow-y: auto;">
+
+    <div style="margin-bottom: 15px;">
+        <table style="width:100%; font-size: 9pt; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <tr>
+                <th style="width:33%; background-color: #1a2a6c; color: white; padding: 8px; text-align: center;">Cluster 0 (MED)</th>
+                <th style="width:33%; background-color: #b21f1f; color: white; padding: 8px; text-align: center;">Cluster 1 (TOP)</th>
+                <th style="width:33%; background-color: #1e988a; color: white; padding: 8px; text-align: center;">Cluster 2 (LOW)</th>
+            </tr>
+            <tr>
+                <td style="text-align: center; padding: 8px; background-color: rgba(26, 42, 108, 0.1);">6 players</td>
+                <td style="text-align: center; padding: 8px; background-color: rgba(178, 31, 31, 0.1);">5 players</td>
+                <td style="text-align: center; padding: 8px; background-color: rgba(30, 152, 138, 0.1);">2 players</td>
+            </tr>
+        </table>
+    </div>
+
+    <table style="width:100%; font-size: 9pt; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <tr style="background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1e988a); color: white;">
+            <th style="padding: 8px; text-align: center; width:15%;">Player</th>
+            <th style="padding: 8px; text-align: center; width:15%;">Cluster</th>
+            <th style="padding: 8px; text-align: center; width:70%;">Key Characteristics</th>
+        </tr>
+
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px; text-align: center; font-weight: bold;">1</td>
+                <td style="background-color: #1a2a6c;
+                    color: white; text-align: center; font-weight: bold; padding: 8px;">0</td>
+                <td style="padding: 8px; font-size: 5pt; background-color: rgba(26, 42, 108, 0.2);"><span style=''>Sleep quality: 5.85</span><br><span style=''>Sleep Time Score: 0.77</span><br><span style=''>Tiredness: 5.15</span><br><span style=''>Energy level: 5.36</span><br><span style=''>Stress level: 3.71</span><br><span style=''>Calmness: 6.11</span><br><span style=''>Anger: 2.74</span><br><span style=''>Muscle Soreness: 5.0</span><br><span style='color: #f44336; font-weight: bold;'>Performance: 0.53</span><br><span style=''>Self_Reported_Score: 60.55</span><br><span style='color: #4caf50; font-weight: bold;'>Biomarker_Score: 77.76</span><br><span style=''>Total_Score: 54.37</span></td>
+            </tr>
+
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px; text-align: center; font-weight: bold;">2</td>
+                <td style="background-color: #b21f1f;
+                    color: white; text-align: center; font-weight: bold; padding: 8px;">1</td>
+                <td style="padding: 8px; font-size: 5pt; background-color: rgba(178, 31, 31, 0.2);"><span style=''>Sleep quality: 6.93</span><br><span style=''>Sleep Time Score: 0.94</span><br><span style=''>Tiredness: 3.72</span><br><span style=''>Energy level: 6.55</span><br><span style=''>Stress level: 2.01</span><br><span style=''>Calmness: 8.1</span><br><span style=''>Anger: 1.82</span><br><span style=''>Muscle Soreness: 3.31</span><br><span style='color: #f44336; font-weight: bold;'>Performance: 0.19</span><br><span style='color: #4caf50; font-weight: bold;'>Self_Reported_Score: 75.2</span><br><span style='color: #4caf50; font-weight: bold;'>Biomarker_Score: 82.77</span><br><span style=''>Total_Score: 72.38</span></td>
+            </tr>
+
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px; text-align: center; font-weight: bold;">3</td>
+                <td style="background-color: #1a2a6c;
+                    color: white; text-align: center; font-weight: bold; padding: 8px;">0</td>
+                <td style="padding: 8px; font-size: 5pt; background-color: rgba(26, 42, 108, 0.2);"><span style=''>Sleep quality: 5.85</span><br><span style=''>Sleep Time Score: 0.77</span><br><span style=''>Tiredness: 5.15</span><br><span style=''>Energy level: 5.36</span><br><span style=''>Stress level: 3.71</span><br><span style=''>Calmness: 6.11</span><br><span style=''>Anger: 2.74</span><br><span style=''>Muscle Soreness: 5.0</span><br><span style='color: #f44336; font-weight: bold;'>Performance: 0.53</span><br><span style=''>Self_Reported_Score: 60.55</span><br><span style='color: #4caf50; font-weight: bold;'>Biomarker_Score: 77.76</span><br><span style=''>Total_Score: 54.37</span></td>
+            </tr>
+
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px; text-align: center; font-weight: bold;">4</td>
+                <td style="background-color: #1a2a6c;
+                    color: white; text-align: center; font-weight: bold; padding: 8px;">0</td>
+                <td style="padding: 8px; font-size: 5pt; background-color: rgba(26, 42, 108, 0.2);"><span style=''>Sleep quality: 5.85</span><br><span style=''>Sleep Time Score: 0.77</span><br><span style=''>Tiredness: 5.15</span><br><span style=''>Energy level: 5.36</span><br><span style=''>Stress level: 3.71</span><br><span style=''>Calmness: 6.11</span><br><span style=''>Anger: 2.74</span><br><span style=''>Muscle Soreness: 5.0</span><br><span style='color: #f44336; font-weight: bold;'>Performance: 0.53</span><br><span style=''>Self_Reported_Score: 60.55</span><br><span style='color: #4caf50; font-weight: bold;'>Biomarker_Score: 77.76</span><br><span style=''>Total_Score: 54.37</span></td>
+            </tr>
+
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px; text-align: center; font-weight: bold;">5</td>
+                <td style="background-color: #1a2a6c;
+                    color: white; text-align: center; font-weight: bold; padding: 8px;">0</td>
+                <td style="padding: 8px; font-size: 5pt; background-color: rgba(26, 42, 108, 0.2);"><span style=''>Sleep quality: 5.85</span><br><span style=''>Sleep Time Score: 0.77</span><br><span style=''>Tiredness: 5.15</span><br><span style=''>Energy level: 5.36</span><br><span style=''>Stress level: 3.71</span><br><span style=''>Calmness: 6.11</span><br><span style=''>Anger: 2.74</span><br><span style=''>Muscle Soreness: 5.0</span><br><span style='color: #f44336; font-weight: bold;'>Performance: 0.53</span><br><span style=''>Self_Reported_Score: 60.55</span><br><span style='color: #4caf50; font-weight: bold;'>Biomarker_Score: 77.76</span><br><span style=''>Total_Score: 54.37</span></td>
+            </tr>
+
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px; text-align: center; font-weight: bold;">6</td>
+                <td style="background-color: #1e988a;
+                    color: white; text-align: center; font-weight: bold; padding: 8px;">2</td>
+                <td style="padding: 8px; font-size: 5pt; background-color: rgba(30, 152, 138, 0.2);"><span style=''>Sleep quality: 6.21</span><br><span style=''>Sleep Time Score: 0.9</span><br><span style=''>Tiredness: 2.62</span><br><span style=''>Energy level: 6.46</span><br><span style=''>Stress level: 4.75</span><br><span style=''>Calmness: 4.42</span><br><span style=''>Anger: 4.75</span><br><span style=''>Muscle Soreness: 2.88</span><br><span style='color: #f44336; font-weight: bold;'>Performance: -0.05</span><br><span style=''>Self_Reported_Score: 63.81</span><br><span style=''>Biomarker_Score: 74.15</span><br><span style=''>Total_Score: 54.31</span></td>
+            </tr>
+
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px; text-align: center; font-weight: bold;">7</td>
+                <td style="background-color: #b21f1f;
+                    color: white; text-align: center; font-weight: bold; padding: 8px;">1</td>
+                <td style="padding: 8px; font-size: 5pt; background-color: rgba(178, 31, 31, 0.2);"><span style=''>Sleep quality: 6.93</span><br><span style=''>Sleep Time Score: 0.94</span><br><span style=''>Tiredness: 3.72</span><br><span style=''>Energy level: 6.55</span><br><span style=''>Stress level: 2.01</span><br><span style=''>Calmness: 8.1</span><br><span style=''>Anger: 1.82</span><br><span style=''>Muscle Soreness: 3.31</span><br><span style='color: #f44336; font-weight: bold;'>Performance: 0.19</span><br><span style='color: #4caf50; font-weight: bold;'>Self_Reported_Score: 75.2</span><br><span style='color: #4caf50; font-weight: bold;'>Biomarker_Score: 82.77</span><br><span style=''>Total_Score: 72.38</span></td>
+            </tr>
+
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px; text-align: center; font-weight: bold;">8</td>
+                <td style="background-color: #1a2a6c;
+                    color: white; text-align: center; font-weight: bold; padding: 8px;">0</td>
+                <td style="padding: 8px; font-size: 5pt; background-color: rgba(26, 42, 108, 0.2);"><span style=''>Sleep quality: 5.85</span><br><span style=''>Sleep Time Score: 0.77</span><br><span style=''>Tiredness: 5.15</span><br><span style=''>Energy level: 5.36</span><br><span style=''>Stress level: 3.71</span><br><span style=''>Calmness: 6.11</span><br><span style=''>Anger: 2.74</span><br><span style=''>Muscle Soreness: 5.0</span><br><span style='color: #f44336; font-weight: bold;'>Performance: 0.53</span><br><span style=''>Self_Reported_Score: 60.55</span><br><span style='color: #4caf50; font-weight: bold;'>Biomarker_Score: 77.76</span><br><span style=''>Total_Score: 54.37</span></td>
+            </tr>
+
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px; text-align: center; font-weight: bold;">9</td>
+                <td style="background-color: #b21f1f;
+                    color: white; text-align: center; font-weight: bold; padding: 8px;">1</td>
+                <td style="padding: 8px; font-size: 5pt; background-color: rgba(178, 31, 31, 0.2);"><span style=''>Sleep quality: 6.93</span><br><span style=''>Sleep Time Score: 0.94</span><br><span style=''>Tiredness: 3.72</span><br><span style=''>Energy level: 6.55</span><br><span style=''>Stress level: 2.01</span><br><span style=''>Calmness: 8.1</span><br><span style=''>Anger: 1.82</span><br><span style=''>Muscle Soreness: 3.31</span><br><span style='color: #f44336; font-weight: bold;'>Performance: 0.19</span><br><span style='color: #4caf50; font-weight: bold;'>Self_Reported_Score: 75.2</span><br><span style='color: #4caf50; font-weight: bold;'>Biomarker_Score: 82.77</span><br><span style=''>Total_Score: 72.38</span></td>
+            </tr>
+
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px; text-align: center; font-weight: bold;">10</td>
+                <td style="background-color: #1e988a;
+                    color: white; text-align: center; font-weight: bold; padding: 8px;">2</td>
+                <td style="padding: 8px; font-size: 5pt; background-color: rgba(30, 152, 138, 0.2);"><span style=''>Sleep quality: 6.21</span><br><span style=''>Sleep Time Score: 0.9</span><br><span style=''>Tiredness: 2.62</span><br><span style=''>Energy level: 6.46</span><br><span style=''>Stress level: 4.75</span><br><span style=''>Calmness: 4.42</span><br><span style=''>Anger: 4.75</span><br><span style=''>Muscle Soreness: 2.88</span><br><span style='color: #f44336; font-weight: bold;'>Performance: -0.05</span><br><span style=''>Self_Reported_Score: 63.81</span><br><span style=''>Biomarker_Score: 74.15</span><br><span style=''>Total_Score: 54.31</span></td>
+            </tr>
+
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px; text-align: center; font-weight: bold;">11</td>
+                <td style="background-color: #1a2a6c;
+                    color: white; text-align: center; font-weight: bold; padding: 8px;">0</td>
+                <td style="padding: 8px; font-size: 5pt; background-color: rgba(26, 42, 108, 0.2);"><span style=''>Sleep quality: 5.85</span><br><span style=''>Sleep Time Score: 0.77</span><br><span style=''>Tiredness: 5.15</span><br><span style=''>Energy level: 5.36</span><br><span style=''>Stress level: 3.71</span><br><span style=''>Calmness: 6.11</span><br><span style=''>Anger: 2.74</span><br><span style=''>Muscle Soreness: 5.0</span><br><span style='color: #f44336; font-weight: bold;'>Performance: 0.53</span><br><span style=''>Self_Reported_Score: 60.55</span><br><span style='color: #4caf50; font-weight: bold;'>Biomarker_Score: 77.76</span><br><span style=''>Total_Score: 54.37</span></td>
+            </tr>
+
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px; text-align: center; font-weight: bold;">12</td>
+                <td style="background-color: #b21f1f;
+                    color: white; text-align: center; font-weight: bold; padding: 8px;">1</td>
+                <td style="padding: 8px; font-size: 5pt; background-color: rgba(178, 31, 31, 0.2);"><span style=''>Sleep quality: 6.93</span><br><span style=''>Sleep Time Score: 0.94</span><br><span style=''>Tiredness: 3.72</span><br><span style=''>Energy level: 6.55</span><br><span style=''>Stress level: 2.01</span><br><span style=''>Calmness: 8.1</span><br><span style=''>Anger: 1.82</span><br><span style=''>Muscle Soreness: 3.31</span><br><span style='color: #f44336; font-weight: bold;'>Performance: 0.19</span><br><span style='color: #4caf50; font-weight: bold;'>Self_Reported_Score: 75.2</span><br><span style='color: #4caf50; font-weight: bold;'>Biomarker_Score: 82.77</span><br><span style=''>Total_Score: 72.38</span></td>
+            </tr>
+
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px; text-align: center; font-weight: bold;">13</td>
+                <td style="background-color: #b21f1f;
+                    color: white; text-align: center; font-weight: bold; padding: 8px;">1</td>
+                <td style="padding: 8px; font-size: 5pt; background-color: rgba(178, 31, 31, 0.2);"><span style=''>Sleep quality: 6.93</span><br><span style=''>Sleep Time Score: 0.94</span><br><span style=''>Tiredness: 3.72</span><br><span style=''>Energy level: 6.55</span><br><span style=''>Stress level: 2.01</span><br><span style=''>Calmness: 8.1</span><br><span style=''>Anger: 1.82</span><br><span style=''>Muscle Soreness: 3.31</span><br><span style='color: #f44336; font-weight: bold;'>Performance: 0.19</span><br><span style='color: #4caf50; font-weight: bold;'>Self_Reported_Score: 75.2</span><br><span style='color: #4caf50; font-weight: bold;'>Biomarker_Score: 82.77</span><br><span style=''>Total_Score: 72.38</span></td>
+            </tr>
+            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p>VITALIZE DX Basketball Team Performance Report &copy; 2025</p>
+            </div>
+        </div>
+    </div>
+    <!-- Back button to return to dashboard -->
+    <div style="margin-top: 20px; text-align: center;">
+        <a href="{{ dashboard_url }}" style="padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;">
+            Back to Dashboard
+        </a>
+    </div>
+</body>
+</html>
